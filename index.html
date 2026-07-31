@@ -127,6 +127,12 @@
     border-radius: 10px; padding: 16px 18px;
   }
   .spotify-note { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px; }
+  .spotify-connect {
+    background: #1DB954; color: #fff; border: none;
+    padding: 8px 18px; border-radius: 20px; cursor: pointer;
+    font-size: 0.9rem; font-weight: 600;
+  }
+  .spotify-connect:hover { background: #17a34a; }
   .track-list-title { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin: 10px 0 6px; }
   .track { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .track:last-child { border-bottom: none; }
@@ -195,6 +201,7 @@
     <div class="spotify-box">
       <p class="spotify-note" data-i18n="spotifyLoading">Loading Spotify...</p>
       <p class="spotify-note" id="spotifyError" hidden></p>
+      <button class="spotify-connect" id="spotifyReconnect" hidden data-i18n="spotifyConnect">Connect Spotify</button>
       <div id="nowPlaying" hidden></div>
       <div id="recent" hidden></div>
     </div>
@@ -223,6 +230,7 @@
       connect: "Connect",
       music: "What I Listen To",
       spotifyLoading: "Loading Spotify...",
+      spotifyConnect: "Connect Spotify",
       nowPlaying: "Now Playing",
       recentlyPlayed: "Recently Played",
       networkError: "Network error. Check your connection and try again.",
@@ -242,6 +250,7 @@
       connect: "ติดต่อ",
       music: "เพลงที่ฟัง",
       spotifyLoading: "กำลังโหลด Spotify...",
+      spotifyConnect: "เชื่อมต่อ Spotify",
       nowPlaying: "กำลังเล่น",
       recentlyPlayed: "เพิ่งเล่นไป",
       networkError: "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
@@ -279,8 +288,11 @@
 
   const spotifyError = document.getElementById('spotifyError');
   const spotifyLoading = document.querySelector('[data-i18n="spotifyLoading"]');
+  const spotifyReconnect = document.getElementById('spotifyReconnect');
   const nowPlayingEl = document.getElementById('nowPlaying');
   const recentEl = document.getElementById('recent');
+
+  let lastAuthRedirect = 0;
 
   const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -301,16 +313,34 @@
       window.location.href = url;
     } catch (e) {
       showSpotifyError('Please open this site over HTTPS.');
+      spotifyReconnect.hidden = false;
+      spotifyLoading.hidden = true;
     }
   }
 
+  async function safeAuthorizeRedirect() {
+    const now = Date.now();
+    if (now - lastAuthRedirect < 30000) {
+      showSpotifyError(translations[lang].authFailed + ' — ' + translations[lang].spotifyConnect);
+      spotifyReconnect.hidden = false;
+      spotifyLoading.hidden = true;
+      return;
+    }
+    lastAuthRedirect = now;
+    authorizeRedirect();
+  }
+
   async function spotifyTokenRequest(body) {
-    const res = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(body)
-    });
-    return res.json();
+    try {
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(body)
+      });
+      return res.json();
+    } catch (e) {
+      return { error: 'network' };
+    }
   }
 
   async function exchangeCode(code) {
@@ -388,7 +418,7 @@
       }
       localStorage.removeItem('spotify_token');
       localStorage.removeItem('spotify_refresh');
-      authorizeRedirect();
+      safeAuthorizeRedirect();
       return null;
     }
     return res.json();
@@ -407,24 +437,33 @@
     renderSpotify();
   }
 
+  spotifyReconnect.addEventListener('click', () => {
+    lastAuthRedirect = 0;
+    authorizeRedirect();
+  });
+
   (async function initSpotify() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     const error = params.get('error');
     if (code) {
-      await exchangeCode(code);
+      try {
+        await exchangeCode(code);
+      } catch (e) {}
       history.replaceState(null, '', window.location.pathname);
       loadSpotify();
       return;
     }
     if (error) {
       showSpotifyError(translations[lang].authFailed + ' (' + error + ')');
+      spotifyReconnect.hidden = false;
+      spotifyLoading.hidden = true;
       history.replaceState(null, '', window.location.pathname);
       return;
     }
     if (!localStorage.getItem('spotify_token')) {
       if (!await refreshToken()) {
-        authorizeRedirect();
+        safeAuthorizeRedirect();
         return;
       }
     }
