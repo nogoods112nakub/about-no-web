@@ -42,7 +42,18 @@
   }
   .container { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
 
-  /* toggle */
+  /* toggles */
+  .lang-toggle {
+    position: fixed; top: 20px; right: 76px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 22px; padding: 8px 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 0.9rem; color: var(--text); z-index: 100;
+    transition: background 0.3s, border 0.3s;
+    box-shadow: 0 2px 12px var(--shadow);
+    font-weight: 500;
+  }
+  .lang-toggle:hover { border-color: var(--accent); }
   .theme-toggle {
     position: fixed; top: 20px; right: 24px;
     background: var(--card); border: 1px solid var(--border);
@@ -116,6 +127,7 @@
 </head>
 <body>
 
+<button class="lang-toggle" id="langToggle" aria-label="Toggle language">ไทย</button>
 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
 
 <div class="container">
@@ -123,16 +135,16 @@
   <header class="profile">
     <img src="profile.png" alt="No" class="avatar">
     <h1>No</h1>
-    <div class="tagline"> Developer · CachyOS</div>
-    <p class="bio">
+    <div class="tagline" data-i18n="tagline">Developer · CachyOS</div>
+    <p class="bio" data-i18n="bio">
       From Thailand. I built Wings Panel, ran Sahai SMP (Minecraft server),
       developed on Roblox, and did freelance server setup. Always tinkering with
-      networks, plugins, and Lua/Go. I Want to be network engineer
+      networks, plugins, and Lua/Go.
     </p>
   </header>
 
   <section>
-    <h2>Skills</h2>
+    <h2 data-i18n="skills">Skills</h2>
     <div class="skills">
       <span class="skill">Minecraft Plugins</span>
       <span class="skill">Network Config</span>
@@ -143,29 +155,34 @@
   </section>
 
   <section>
-    <h2>Projects</h2>
+    <h2 data-i18n="projects">Projects</h2>
 
     <div class="project">
       <h3>Wings Panel</h3>
-      <p>Owner & builder of the Wings Panel — a control panel solution.</p>
-      <div class="project-tags"><span class="tag">owner</span></div>
+      <p data-i18n="wingsDesc">Owner & builder of the Wings Panel — a control panel solution.</p>
+      <div class="project-tags"><span class="tag" data-i18n="owner">owner</span></div>
     </div>
 
     <div class="project">
-      <h3>Sahai SMP <span class="tag" style="background:#ffd4d4;color:#c00;">closed</span></h3>
-      <p>Minecraft survival server. Owner & maintainer. Now closed.</p>
-      <div class="project-tags"><span class="tag">Minecraft</span><span class="tag">owner</span></div>
+      <h3>Sahai SMP <span class="tag" style="background:#ffd4d4;color:#c00;" data-i18n="closed">closed</span></h3>
+      <p data-i18n="sahaiDesc">Minecraft survival server. Owner & maintainer. Now closed.</p>
+      <div class="project-tags"><span class="tag">Minecraft</span><span class="tag" data-i18n="owner">owner</span></div>
     </div>
 
     <div class="project">
-      <h3>Roblox Maps <span class="tag" style="background:#ffd4d4;color:#c00;">closed</span></h3>
-      <p>Built custom maps and experiences on Roblox. No longer active.</p>
-      <div class="project-tags"><span class="tag">Roblox</span><span class="tag">map dev</span></div>
+      <h3>Roblox Maps <span class="tag" style="background:#ffd4d4;color:#c00;" data-i18n="closed">closed</span></h3>
+      <p data-i18n="robloxDesc">Built custom maps and experiences on Roblox. No longer active.</p>
+      <div class="project-tags"><span class="tag">Roblox</span><span class="tag" data-i18n="mapdev">map dev</span></div>
     </div>
   </section>
 
   <section>
-    <h2>Connect</h2>
+    <h2 data-i18n="music">What I Listen To</h2>
+    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4fca5f6159804e8a822835eae050ec7c" width="100%" height="380" frameBorder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Spotify"></iframe>
+  </section>
+
+  <section>
+    <h2 data-i18n="connect">Connect</h2>
     <div class="socials">
       <a class="social-link" href="https://github.com/nogoods112nakub" target="_blank" rel="noopener">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
@@ -186,6 +203,54 @@
 </div>
 
 <script>
+  const translations = {
+    en: {
+      tagline: "Developer · CachyOS",
+      bio: "From Thailand. I built Wings Panel, ran Sahai SMP (Minecraft server), developed on Roblox, and did freelance server setup. Always tinkering with networks, plugins, and Lua/Go.",
+      skills: "Skills",
+      projects: "Projects",
+      connect: "Connect",
+      music: "What I Listen To",
+      listenOnSpotify: "Listen on Spotify",
+      wingsDesc: "Owner & builder of the Wings Panel — a control panel solution.",
+      sahaiDesc: "Minecraft survival server. Owner & maintainer. Now closed.",
+      robloxDesc: "Built custom maps and experiences on Roblox. No longer active.",
+      owner: "owner",
+      closed: "closed",
+      mapdev: "map dev"
+    },
+    th: {
+      tagline: "นักพัฒนา · CachyOS",
+      bio: "มาจากประเทศไทย สร้าง Wings Panel เคยดูแล Sahai SMP (เซิร์ฟเวอร์ Minecraft) พัฒนาบน Roblox และรับจ้างตั้งค่าเซิร์ฟเวอร์ ชอบทดลองกับเครือข่าย ปลั๊กอิน และ Lua/Go",
+      skills: "ทักษะ",
+      projects: "ผลงาน",
+      connect: "ติดต่อ",
+      music: "เพลงที่ฟัง",
+      listenOnSpotify: "ฟังบน Spotify",
+      wingsDesc: "เจ้าของและผู้สร้าง Wings Panel — โซลูชันแผงควบคุมเซิร์ฟเวอร์",
+      sahaiDesc: "เซิร์ฟเวอร์ Minecraft แนวเอาชีวิตรอด เจ้าของและผู้ดูแล ตอนนี้ปิดแล้ว",
+      robloxDesc: "สร้างแผนที่และประสบการณ์บน Roblox ไม่ได้ทำต่อแล้ว",
+      owner: "เจ้าของ",
+      closed: "ปิดแล้ว",
+      mapdev: "นักทำแผนที่"
+    }
+  };
+
+  const langToggle = document.getElementById('langToggle');
+  let lang = localStorage.getItem('lang') || 'en';
+  const setLang = (l) => {
+    lang = l;
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.dataset.i18n;
+      el.textContent = translations[l][key];
+    });
+    langToggle.textContent = l === 'en' ? 'ไทย' : 'EN';
+    localStorage.setItem('lang', l);
+    document.documentElement.lang = l === 'en' ? 'en' : 'th';
+  };
+  setLang(lang);
+  langToggle.addEventListener('click', () => setLang(lang === 'en' ? 'th' : 'en'));
+
   const toggle = document.getElementById('themeToggle');
   const stored = localStorage.getItem('theme');
   if (stored === 'dark') {
