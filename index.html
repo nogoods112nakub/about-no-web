@@ -121,6 +121,20 @@
     box-shadow: 0 4px 12px var(--shadow);
   }
 
+  /* spotify */
+  .spotify-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px;
+  }
+  .spotify-note { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px; }
+  .track-list-title { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin: 10px 0 6px; }
+  .track { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .track:last-child { border-bottom: none; }
+  .track img { width: 48px; height: 48px; border-radius: 6px; flex-shrink: 0; }
+  .track-name { font-weight: 600; font-size: 0.92rem; }
+  .track-artist { color: var(--text-secondary); font-size: 0.8rem; }
+  .now-playing { display: inline-block; background: #1DB954; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-bottom: 4px; }
+
   /* footer */
   footer { text-align: center; color: var(--text-secondary); font-size: 0.82rem; margin-top: 48px; }
 </style>
@@ -178,7 +192,12 @@
 
   <section>
     <h2 data-i18n="music">What I Listen To</h2>
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4fca5f6159804e8a822835eae050ec7c" width="100%" height="380" frameBorder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Spotify"></iframe>
+    <div class="spotify-box">
+      <p class="spotify-note" data-i18n="spotifyNote">Connect Spotify to show your current & recent tracks.</p>
+      <p class="spotify-note" id="spotifyError" hidden></p>
+      <div id="nowPlaying" hidden></div>
+      <div id="recent" hidden></div>
+    </div>
   </section>
 
   <section>
@@ -211,7 +230,11 @@
       projects: "Projects",
       connect: "Connect",
       music: "What I Listen To",
-      listenOnSpotify: "Listen on Spotify",
+      spotifyNote: "Connect Spotify to show your current & recent tracks.",
+      nowPlaying: "Now Playing",
+      recentlyPlayed: "Recently Played",
+      networkError: "Network error. Check your connection and try again.",
+      authFailed: "Spotify authorization failed",
       wingsDesc: "Owner & builder of the Wings Panel — a control panel solution.",
       sahaiDesc: "Minecraft survival server. Owner & maintainer. Now closed.",
       robloxDesc: "Built custom maps and experiences on Roblox. No longer active.",
@@ -226,7 +249,11 @@
       projects: "ผลงาน",
       connect: "ติดต่อ",
       music: "เพลงที่ฟัง",
-      listenOnSpotify: "ฟังบน Spotify",
+      spotifyNote: "เชื่อมต่อ Spotify เพื่อแสดงเพลงปัจจุบันและเพลงที่เพิ่งฟัง",
+      nowPlaying: "กำลังเล่น",
+      recentlyPlayed: "เพิ่งเล่นไป",
+      networkError: "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
+      authFailed: "การเชื่อมต่อ Spotify ล้มเหลว",
       wingsDesc: "เจ้าของและผู้สร้าง Wings Panel — โซลูชันแผงควบคุมเซิร์ฟเวอร์",
       sahaiDesc: "เซิร์ฟเวอร์ Minecraft แนวเอาชีวิตรอด เจ้าของและผู้ดูแล ตอนนี้ปิดแล้ว",
       robloxDesc: "สร้างแผนที่และประสบการณ์บน Roblox ไม่ได้ทำต่อแล้ว",
@@ -235,6 +262,9 @@
       mapdev: "นักทำแผนที่"
     }
   };
+
+  let spotifyNow = null;
+  let spotifyRecent = null;
 
   const langToggle = document.getElementById('langToggle');
   let lang = localStorage.getItem('lang') || 'en';
@@ -247,9 +277,98 @@
     langToggle.textContent = l === 'en' ? 'ไทย' : 'EN';
     localStorage.setItem('lang', l);
     document.documentElement.lang = l === 'en' ? 'en' : 'th';
+    renderSpotify();
   };
   setLang(lang);
   langToggle.addEventListener('click', () => setLang(lang === 'en' ? 'th' : 'en'));
+
+  const spotifyError = document.getElementById('spotifyError');
+  const nowPlayingEl = document.getElementById('nowPlaying');
+  const recentEl = document.getElementById('recent');
+
+  const CLIENT_ID = '4fca5f6159804e8a822835eae050ec7c';
+
+  function authorizeRedirect() {
+    const redirect = window.location.origin + window.location.pathname;
+    const url = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
+      client_id: CLIENT_ID,
+      response_type: 'token',
+      redirect_uri: redirect,
+      scope: 'user-read-currently-playing user-read-recently-played'
+    });
+    window.location.href = url;
+  }
+
+  const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const renderTrack = (item) => {
+    const t = item.track || item.item;
+    const img = t.album ? t.album.images[0] : null;
+    return `<div class="track">${img ? `<img src="${escapeHtml(img.url)}" alt="">` : ''}<div><div class="track-name">${escapeHtml(t.name)}</div><div class="track-artist">${escapeHtml(t.artists.map(a => a.name).join(', '))}</div></div></div>`;
+  };
+
+  function renderSpotify() {
+    if (spotifyNow) {
+      nowPlayingEl.hidden = false;
+      nowPlayingEl.innerHTML = '<span class="now-playing">' + translations[lang].nowPlaying + '</span>' + renderTrack(spotifyNow);
+    }
+    if (spotifyRecent && spotifyRecent.length) {
+      recentEl.hidden = false;
+      recentEl.innerHTML = '<div class="track-list-title">' + translations[lang].recentlyPlayed + '</div>' + spotifyRecent.map(renderTrack).join('');
+    }
+  }
+
+  function showSpotifyError(msg) {
+    spotifyError.textContent = msg;
+    spotifyError.hidden = false;
+  }
+
+  async function spotifyFetch(url) {
+    const token = localStorage.getItem('spotify_token');
+    let res;
+    try {
+      res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+    } catch (e) {
+      showSpotifyError(translations[lang].networkError);
+      return null;
+    }
+    if (res.status === 401) {
+      localStorage.removeItem('spotify_token');
+      authorizeRedirect();
+      return null;
+    }
+    return res.status === 204 ? {} : res.json();
+  }
+
+  async function loadSpotify() {
+    spotifyError.hidden = true;
+    if (!localStorage.getItem('spotify_token')) return;
+
+    const now = await spotifyFetch('https://api.spotify.com/v1/me/player/currently-playing');
+    if (now && now.item) spotifyNow = now;
+
+    const recent = await spotifyFetch('https://api.spotify.com/v1/me/player/recently-played?limit=5');
+    if (recent && recent.items && recent.items.length) spotifyRecent = recent.items;
+
+    renderSpotify();
+  }
+
+  (function initSpotify() {
+    if (window.location.hash.includes('access_token')) {
+      const params = new URLSearchParams(window.location.hash.substring(1));
+      localStorage.setItem('spotify_token', params.get('access_token'));
+      history.replaceState(null, '', window.location.pathname);
+    } else if (window.location.hash.includes('error')) {
+      const err = new URLSearchParams(window.location.hash.substring(1)).get('error');
+      showSpotifyError(translations[lang].authFailed + ' (' + err + ')');
+      history.replaceState(null, '', window.location.pathname);
+      return;
+    } else if (!localStorage.getItem('spotify_token')) {
+      authorizeRedirect();
+      return;
+    }
+    loadSpotify();
+  })();
 
   const toggle = document.getElementById('themeToggle');
   const stored = localStorage.getItem('theme');
