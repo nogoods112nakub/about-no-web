@@ -314,7 +314,15 @@
   const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   function renderDiscord() {
-    if (!discordData) return;
+    if (!discordData) {
+      discordAvatar.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+      discordName.textContent = 'no_uiuyt';
+      discordStatus.textContent = translations[lang].discordTitle;
+      discordDot.style.background = 'var(--accent)';
+      discordActivity.hidden = true;
+      discordSpotify.hidden = true;
+      return;
+    }
     const user = discordData.discord_user;
     discordAvatar.src = user.avatar
       ? 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png?size=128'
