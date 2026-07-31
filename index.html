@@ -287,16 +287,68 @@
   const recentEl = document.getElementById('recent');
 
   const CLIENT_ID = '4fca5f6159804e8a822835eae050ec7c';
+  const REDIRECT_URI = window.location.origin + window.location.pathname;
 
-  function authorizeRedirect() {
-    const redirect = window.location.origin + window.location.pathname;
+  const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+  async function authorizeRedirect() {
+    const verifier = b64url(crypto.getRandomValues(new Uint8Array(64)));
+    const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+    localStorage.setItem('spotify_verifier', verifier);
     const url = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
       client_id: CLIENT_ID,
-      response_type: 'token',
-      redirect_uri: redirect,
-      scope: 'user-read-currently-playing user-read-recently-played'
+      response_type: 'code',
+      redirect_uri: REDIRECT_URI,
+      scope: 'user-read-currently-playing user-read-recently-played',
+      code_challenge: challenge,
+      code_challenge_method: 'S256'
     });
     window.location.href = url;
+  }
+
+  async function spotifyTokenRequest(body) {
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(body)
+    });
+    return res.json();
+  }
+
+  async function exchangeCode(code) {
+    const verifier = localStorage.getItem('spotify_verifier');
+    localStorage.removeItem('spotify_verifier');
+    const data = await spotifyTokenRequest({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: REDIRECT_URI,
+      client_id: CLIENT_ID,
+      code_verifier: verifier
+    });
+    if (data.access_token) {
+      localStorage.setItem('spotify_token', data.access_token);
+      if (data.refresh_token) localStorage.setItem('spotify_refresh', data.refresh_token);
+      return true;
+    }
+    showSpotifyError(translations[lang].authFailed + ' (' + (data.error || 'unknown') + ')');
+    return false;
+  }
+
+  async function refreshToken() {
+    const refresh = localStorage.getItem('spotify_refresh');
+    if (!refresh) return false;
+    const data = await spotifyTokenRequest({
+      grant_type: 'refresh_token',
+      refresh_token: refresh,
+      client_id: CLIENT_ID
+    });
+    if (data.access_token) {
+      localStorage.setItem('spotify_token', data.access_token);
+      if (data.refresh_token) localStorage.setItem('spotify_refresh', data.refresh_token);
+      return true;
+    }
+    return false;
   }
 
   const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -333,9 +385,16 @@
       return null;
     }
     if (res.status === 401) {
-      localStorage.removeItem('spotify_token');
-      authorizeRedirect();
-      return null;
+      if (!await refreshToken()) {
+        authorizeRedirect();
+        return null;
+      }
+      const t = localStorage.getItem('spotify_token');
+      res = await fetch(url, { headers: { Authorization: 'Bearer ' + t } });
+      if (res.status === 401) {
+        authorizeRedirect();
+        return null;
+      }
     }
     return res.status === 204 ? {} : res.json();
   }
@@ -353,19 +412,26 @@
     renderSpotify();
   }
 
-  (function initSpotify() {
-    if (window.location.hash.includes('access_token')) {
-      const params = new URLSearchParams(window.location.hash.substring(1));
-      localStorage.setItem('spotify_token', params.get('access_token'));
+  (async function initSpotify() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+    if (code) {
+      await exchangeCode(code);
       history.replaceState(null, '', window.location.pathname);
-    } else if (window.location.hash.includes('error')) {
-      const err = new URLSearchParams(window.location.hash.substring(1)).get('error');
-      showSpotifyError(translations[lang].authFailed + ' (' + err + ')');
+      loadSpotify();
+      return;
+    }
+    if (error) {
+      showSpotifyError(translations[lang].authFailed + ' (' + error + ')');
       history.replaceState(null, '', window.location.pathname);
       return;
-    } else if (!localStorage.getItem('spotify_token')) {
-      authorizeRedirect();
-      return;
+    }
+    if (!localStorage.getItem('spotify_token')) {
+      if (!await refreshToken()) {
+        authorizeRedirect();
+        return;
+      }
     }
     loadSpotify();
   })();
