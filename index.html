@@ -193,6 +193,7 @@
   <section>
     <h2 data-i18n="music">What I Listen To</h2>
     <div class="spotify-box">
+      <p class="spotify-note" data-i18n="spotifyLoading">Loading Spotify...</p>
       <p class="spotify-note" id="spotifyError" hidden></p>
       <div id="nowPlaying" hidden></div>
       <div id="recent" hidden></div>
@@ -221,6 +222,7 @@
       projects: "Projects",
       connect: "Connect",
       music: "What I Listen To",
+      spotifyLoading: "Loading Spotify...",
       nowPlaying: "Now Playing",
       recentlyPlayed: "Recently Played",
       networkError: "Network error. Check your connection and try again.",
@@ -239,6 +241,7 @@
       projects: "ผลงาน",
       connect: "ติดต่อ",
       music: "เพลงที่ฟัง",
+      spotifyLoading: "กำลังโหลด Spotify...",
       nowPlaying: "กำลังเล่น",
       recentlyPlayed: "เพิ่งเล่นไป",
       networkError: "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
@@ -275,6 +278,7 @@
   const REDIRECT_URI = window.location.origin + window.location.pathname;
 
   const spotifyError = document.getElementById('spotifyError');
+  const spotifyLoading = document.querySelector('[data-i18n="spotifyLoading"]');
   const nowPlayingEl = document.getElementById('nowPlaying');
   const recentEl = document.getElementById('recent');
 
@@ -282,18 +286,22 @@
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
   async function authorizeRedirect() {
-    const verifier = b64url(crypto.getRandomValues(new Uint8Array(64)));
-    const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
-    localStorage.setItem('spotify_verifier', verifier);
-    const url = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
-      client_id: CLIENT_ID,
-      response_type: 'code',
-      redirect_uri: REDIRECT_URI,
-      scope: 'user-read-currently-playing user-read-recently-played',
-      code_challenge: challenge,
-      code_challenge_method: 'S256'
-    });
-    window.location.href = url;
+    try {
+      const verifier = b64url(crypto.getRandomValues(new Uint8Array(64)));
+      const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+      localStorage.setItem('spotify_verifier', verifier);
+      const url = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
+        client_id: CLIENT_ID,
+        response_type: 'code',
+        redirect_uri: REDIRECT_URI,
+        scope: 'user-read-currently-playing user-read-recently-played',
+        code_challenge: challenge,
+        code_challenge_method: 'S256'
+      });
+      window.location.href = url;
+    } catch (e) {
+      showSpotifyError('Please open this site over HTTPS.');
+    }
   }
 
   async function spotifyTokenRequest(body) {
@@ -365,39 +373,37 @@
   }
 
   async function spotifyFetch(url) {
-    const token = localStorage.getItem('spotify_token');
     let res;
     try {
-      res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+      res = await fetch(url, { headers: { Authorization: 'Bearer ' + localStorage.getItem('spotify_token') } });
     } catch (e) {
       showSpotifyError(translations[lang].networkError);
       return null;
     }
-    if (res.status === 401) {
-      if (!await refreshToken()) {
-        authorizeRedirect();
-        return null;
+    if (res.status === 204) return {};
+    if (!res.ok) {
+      if (await refreshToken()) {
+        res = await fetch(url, { headers: { Authorization: 'Bearer ' + localStorage.getItem('spotify_token') } });
+        if (res.ok) return res.status === 204 ? {} : res.json();
       }
-      const t = localStorage.getItem('spotify_token');
-      res = await fetch(url, { headers: { Authorization: 'Bearer ' + t } });
-      if (res.status === 401) {
-        authorizeRedirect();
-        return null;
-      }
+      localStorage.removeItem('spotify_token');
+      localStorage.removeItem('spotify_refresh');
+      authorizeRedirect();
+      return null;
     }
-    return res.status === 204 ? {} : res.json();
+    return res.json();
   }
 
   async function loadSpotify() {
+    if (localStorage.getItem('spotify_token')) {
+      const now = await spotifyFetch('https://api.spotify.com/v1/me/player/currently-playing');
+      if (now && now.item) spotifyNow = now;
+
+      const recent = await spotifyFetch('https://api.spotify.com/v1/me/player/recently-played?limit=5');
+      if (recent && recent.items && recent.items.length) spotifyRecent = recent.items;
+    }
+    spotifyLoading.hidden = true;
     spotifyError.hidden = true;
-    if (!localStorage.getItem('spotify_token')) return;
-
-    const now = await spotifyFetch('https://api.spotify.com/v1/me/player/currently-playing');
-    if (now && now.item) spotifyNow = now;
-
-    const recent = await spotifyFetch('https://api.spotify.com/v1/me/player/recently-played?limit=5');
-    if (recent && recent.items && recent.items.length) spotifyRecent = recent.items;
-
     renderSpotify();
   }
 
