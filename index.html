@@ -121,19 +121,27 @@
     box-shadow: 0 4px 12px var(--shadow);
   }
 
-  /* spotify */
-  .spotify-box {
+  /* discord */
+  .discord-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 10px; padding: 16px 18px;
   }
-  .spotify-note { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px; }
-  .track-list-title { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin: 10px 0 6px; }
-  .track { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .track:last-child { border-bottom: none; }
-  .track img { width: 48px; height: 48px; border-radius: 6px; flex-shrink: 0; }
-  .track-name { font-weight: 600; font-size: 0.92rem; }
-  .track-artist { color: var(--text-secondary); font-size: 0.8rem; }
-  .now-playing { display: inline-block; background: #1DB954; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-bottom: 4px; }
+  .discord-header { display: flex; align-items: center; gap: 12px; }
+  .discord-avatar { width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0; }
+  .discord-name { font-weight: 700; font-size: 1.05rem; }
+  .discord-status { font-size: 0.85rem; color: var(--text-secondary); }
+  .discord-dot { width: 14px; height: 14px; border-radius: 50%; margin-left: auto; border: 2px solid var(--card); }
+  .discord-activity {
+    margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary);
+    background: var(--bg); border-radius: 8px; padding: 8px 12px;
+  }
+  .discord-spotify {
+    margin-top: 12px; display: flex; align-items: center; gap: 12px;
+    background: var(--bg); border-radius: 8px; padding: 8px 12px;
+  }
+  .discord-spotify img { width: 40px; height: 40px; border-radius: 6px; flex-shrink: 0; }
+  .discord-spotify .track-name { font-size: 0.85rem; }
+  .discord-spotify .track-artist { font-size: 0.78rem; color: var(--text-secondary); }
 
   /* footer */
   footer { text-align: center; color: var(--text-secondary); font-size: 0.82rem; margin-top: 48px; }
@@ -191,12 +199,18 @@
   </section>
 
   <section>
-    <h2 data-i18n="music">What I Listen To</h2>
-    <div class="spotify-box">
-      <p class="spotify-note" data-i18n="spotifyNote">Connect Spotify to show your current & recent tracks.</p>
-      <p class="spotify-note" id="spotifyError" hidden></p>
-      <div id="nowPlaying" hidden></div>
-      <div id="recent" hidden></div>
+    <h2 data-i18n="discordTitle">Discord</h2>
+    <div class="discord-card">
+      <div class="discord-header">
+        <img id="discordAvatar" class="discord-avatar" alt="">
+        <div>
+          <div class="discord-name" id="discordName">no_uiuyt</div>
+          <div class="discord-status" id="discordStatus">—</div>
+        </div>
+        <span class="discord-dot" id="discordDot"></span>
+      </div>
+      <div class="discord-activity" id="discordActivity" hidden></div>
+      <div class="discord-spotify" id="discordSpotify" hidden></div>
     </div>
   </section>
 
@@ -229,12 +243,12 @@
       skills: "Skills",
       projects: "Projects",
       connect: "Connect",
-      music: "What I Listen To",
-      spotifyNote: "Connect Spotify to show your current & recent tracks.",
-      nowPlaying: "Now Playing",
-      recentlyPlayed: "Recently Played",
-      networkError: "Network error. Check your connection and try again.",
-      authFailed: "Spotify authorization failed",
+      discordTitle: "Discord",
+      statusOnline: "Online",
+      statusIdle: "Idle",
+      statusDnd: "Do Not Disturb",
+      statusOffline: "Offline",
+      listening: "Listening to Spotify",
       wingsDesc: "Owner & builder of the Wings Panel — a control panel solution.",
       sahaiDesc: "Minecraft survival server. Owner & maintainer. Now closed.",
       robloxDesc: "Built custom maps and experiences on Roblox. No longer active.",
@@ -248,12 +262,12 @@
       skills: "ทักษะ",
       projects: "ผลงาน",
       connect: "ติดต่อ",
-      music: "เพลงที่ฟัง",
-      spotifyNote: "เชื่อมต่อ Spotify เพื่อแสดงเพลงปัจจุบันและเพลงที่เพิ่งฟัง",
-      nowPlaying: "กำลังเล่น",
-      recentlyPlayed: "เพิ่งเล่นไป",
-      networkError: "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
-      authFailed: "การเชื่อมต่อ Spotify ล้มเหลว",
+      discordTitle: "ดิสคอร์ด",
+      statusOnline: "ออนไลน์",
+      statusIdle: "ไม่ว่าง",
+      statusDnd: "ห้ามรบกวน",
+      statusOffline: "ออฟไลน์",
+      listening: "กำลังฟัง Spotify",
       wingsDesc: "เจ้าของและผู้สร้าง Wings Panel — โซลูชันแผงควบคุมเซิร์ฟเวอร์",
       sahaiDesc: "เซิร์ฟเวอร์ Minecraft แนวเอาชีวิตรอด เจ้าของและผู้ดูแล ตอนนี้ปิดแล้ว",
       robloxDesc: "สร้างแผนที่และประสบการณ์บน Roblox ไม่ได้ทำต่อแล้ว",
@@ -263,8 +277,7 @@
     }
   };
 
-  let spotifyNow = null;
-  let spotifyRecent = null;
+  let discordData = null;
 
   const langToggle = document.getElementById('langToggle');
   let lang = localStorage.getItem('lang') || 'en';
@@ -277,164 +290,66 @@
     langToggle.textContent = l === 'en' ? 'ไทย' : 'EN';
     localStorage.setItem('lang', l);
     document.documentElement.lang = l === 'en' ? 'en' : 'th';
-    renderSpotify();
+    renderDiscord();
   };
   setLang(lang);
   langToggle.addEventListener('click', () => setLang(lang === 'en' ? 'th' : 'en'));
 
-  const spotifyError = document.getElementById('spotifyError');
-  const nowPlayingEl = document.getElementById('nowPlaying');
-  const recentEl = document.getElementById('recent');
+  const DISCORD_ID = '1006724244308246660';
 
-  const CLIENT_ID = '4fca5f6159804e8a822835eae050ec7c';
-  const REDIRECT_URI = window.location.origin + window.location.pathname;
+  const discordAvatar = document.getElementById('discordAvatar');
+  const discordName = document.getElementById('discordName');
+  const discordStatus = document.getElementById('discordStatus');
+  const discordDot = document.getElementById('discordDot');
+  const discordActivity = document.getElementById('discordActivity');
+  const discordSpotify = document.getElementById('discordSpotify');
 
-  const b64url = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-  async function authorizeRedirect() {
-    const verifier = b64url(crypto.getRandomValues(new Uint8Array(64)));
-    const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
-    localStorage.setItem('spotify_verifier', verifier);
-    const url = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
-      client_id: CLIENT_ID,
-      response_type: 'code',
-      redirect_uri: REDIRECT_URI,
-      scope: 'user-read-currently-playing user-read-recently-played',
-      code_challenge: challenge,
-      code_challenge_method: 'S256'
-    });
-    window.location.href = url;
-  }
-
-  async function spotifyTokenRequest(body) {
-    const res = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(body)
-    });
-    return res.json();
-  }
-
-  async function exchangeCode(code) {
-    const verifier = localStorage.getItem('spotify_verifier');
-    localStorage.removeItem('spotify_verifier');
-    const data = await spotifyTokenRequest({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: REDIRECT_URI,
-      client_id: CLIENT_ID,
-      code_verifier: verifier
-    });
-    if (data.access_token) {
-      localStorage.setItem('spotify_token', data.access_token);
-      if (data.refresh_token) localStorage.setItem('spotify_refresh', data.refresh_token);
-      return true;
-    }
-    showSpotifyError(translations[lang].authFailed + ' (' + (data.error || 'unknown') + ')');
-    return false;
-  }
-
-  async function refreshToken() {
-    const refresh = localStorage.getItem('spotify_refresh');
-    if (!refresh) return false;
-    const data = await spotifyTokenRequest({
-      grant_type: 'refresh_token',
-      refresh_token: refresh,
-      client_id: CLIENT_ID
-    });
-    if (data.access_token) {
-      localStorage.setItem('spotify_token', data.access_token);
-      if (data.refresh_token) localStorage.setItem('spotify_refresh', data.refresh_token);
-      return true;
-    }
-    return false;
-  }
+  const statusInfo = {
+    online: { key: 'statusOnline', color: '#3ba55d' },
+    idle: { key: 'statusIdle', color: '#faa61a' },
+    dnd: { key: 'statusDnd', color: '#ed4245' },
+    offline: { key: 'statusOffline', color: '#747f8d' }
+  };
 
   const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  const renderTrack = (item) => {
-    const t = item.track || item.item;
-    const img = t.album ? t.album.images[0] : null;
-    return `<div class="track">${img ? `<img src="${escapeHtml(img.url)}" alt="">` : ''}<div><div class="track-name">${escapeHtml(t.name)}</div><div class="track-artist">${escapeHtml(t.artists.map(a => a.name).join(', '))}</div></div></div>`;
-  };
+  function renderDiscord() {
+    if (!discordData) return;
+    const user = discordData.discord_user;
+    discordAvatar.src = user.avatar
+      ? 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png?size=128'
+      : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    discordName.textContent = user.display_name || user.global_name || user.username;
 
-  function renderSpotify() {
-    if (spotifyNow) {
-      nowPlayingEl.hidden = false;
-      nowPlayingEl.innerHTML = '<span class="now-playing">' + translations[lang].nowPlaying + '</span>' + renderTrack(spotifyNow);
-    }
-    if (spotifyRecent && spotifyRecent.length) {
-      recentEl.hidden = false;
-      recentEl.innerHTML = '<div class="track-list-title">' + translations[lang].recentlyPlayed + '</div>' + spotifyRecent.map(renderTrack).join('');
+    const st = statusInfo[discordData.discord_status] || statusInfo.offline;
+    discordStatus.textContent = translations[lang][st.key];
+    discordDot.style.background = st.color;
+
+    const custom = (discordData.activities || []).find(a => a.type === 4);
+    discordActivity.hidden = !custom;
+    if (custom) discordActivity.textContent = custom.state || custom.name;
+
+    discordSpotify.hidden = !discordData.spotify;
+    if (discordData.spotify) {
+      discordSpotify.innerHTML = '<img src="' + escapeHtml(discordData.spotify.album_art_url) + '" alt="">' +
+        '<div><div class="track-name">' + escapeHtml(discordData.spotify.song) + '</div>' +
+        '<div class="track-artist">' + escapeHtml(discordData.spotify.artist) + '</div></div>';
     }
   }
 
-  function showSpotifyError(msg) {
-    spotifyError.textContent = msg;
-    spotifyError.hidden = false;
-  }
-
-  async function spotifyFetch(url) {
-    const token = localStorage.getItem('spotify_token');
-    let res;
+  async function loadDiscord() {
     try {
-      res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+      const res = await fetch('https://api.lanyard.rest/v1/users/' + DISCORD_ID);
+      const json = await res.json();
+      if (json && json.data) {
+        discordData = json.data;
+        renderDiscord();
+      }
     } catch (e) {
-      showSpotifyError(translations[lang].networkError);
-      return null;
+      discordStatus.textContent = 'Discord';
     }
-    if (res.status === 401) {
-      if (!await refreshToken()) {
-        authorizeRedirect();
-        return null;
-      }
-      const t = localStorage.getItem('spotify_token');
-      res = await fetch(url, { headers: { Authorization: 'Bearer ' + t } });
-      if (res.status === 401) {
-        authorizeRedirect();
-        return null;
-      }
-    }
-    return res.status === 204 ? {} : res.json();
   }
-
-  async function loadSpotify() {
-    spotifyError.hidden = true;
-    if (!localStorage.getItem('spotify_token')) return;
-
-    const now = await spotifyFetch('https://api.spotify.com/v1/me/player/currently-playing');
-    if (now && now.item) spotifyNow = now;
-
-    const recent = await spotifyFetch('https://api.spotify.com/v1/me/player/recently-played?limit=5');
-    if (recent && recent.items && recent.items.length) spotifyRecent = recent.items;
-
-    renderSpotify();
-  }
-
-  (async function initSpotify() {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const error = params.get('error');
-    if (code) {
-      await exchangeCode(code);
-      history.replaceState(null, '', window.location.pathname);
-      loadSpotify();
-      return;
-    }
-    if (error) {
-      showSpotifyError(translations[lang].authFailed + ' (' + error + ')');
-      history.replaceState(null, '', window.location.pathname);
-      return;
-    }
-    if (!localStorage.getItem('spotify_token')) {
-      if (!await refreshToken()) {
-        authorizeRedirect();
-        return;
-      }
-    }
-    loadSpotify();
-  })();
+  loadDiscord();
 
   const toggle = document.getElementById('themeToggle');
   const stored = localStorage.getItem('theme');
