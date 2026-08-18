@@ -73,7 +73,10 @@
     object-fit: cover; border: 3px solid var(--accent);
     margin-bottom: 16px;
   }
-  .profile h1 { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
+  .profile h1 { font-size: 2rem; font-weight: 700; margin-bottom: 2px; }
+  .personal-info {
+    font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;
+  }
   .tagline {
     font-size: 1.05rem; color: var(--accent); font-weight: 500;
     margin-bottom: 12px;
@@ -136,6 +139,7 @@
   <header class="profile">
     <img src="profile.png" alt="No" class="avatar">
     <h1>No</h1>
+    <div class="personal-info">AKA: no/goods112 &bull; <span data-i18n="gender">Male</span></div>
     <div class="tagline" data-i18n="tagline">Developer · Use CachyOS</div>
     <p class="bio" data-i18n="bio">
       From Thailand. I built Wings Panel, ran Sahai SMP (Minecraft server),
@@ -143,8 +147,8 @@
       networks, plugins, and Lua/Go.
     </p>
     <a href="https://discord.com/users/1006724244308246660" target="_blank">
-  <img src="https://lanyard.cnrad.dev/api/1006724244308246660?theme=dark&bg=18191c&animated=true" alt="Discord Presence" />
-</a>
+      <img src="https://lanyard.cnrad.dev/api/1006724244308246660?theme=dark&bg=18191c&animated=true" alt="Discord Presence" />
+    </a>
   </header>
 
   <section>
@@ -162,21 +166,25 @@
     <h2 data-i18n="projects">Projects</h2>
     
     <div class="project">
-
-    <div class="project">
-      <h3>Sukub Proxy <span class="tag" style="background:#f5de6c;color:#222222;" data-i18n="coming_soon">coming soon</span></h3>
-      <p data-i18n="aetherDesc">Sukub Proxy is a reliable Minecraft proxy coming soon.</p>
-      <div class="project-tags"><span class="tag">Minecraft proxy</span><span class="tag" data-i18n="owner">owner</span></div>
-    </div>
-
-    <div class="project">
-      <h3>Wings Panel <span class="tag" style="background:#d4e6ff;color:#0055cc;" data-i18n="frozen">frozen</span></h3>
-      <p data-i18n="wingsDesc">Owner & builder of the Wings Panel — a control panel solution but im tired with this project now.</p>
+      <h3>Freeze <span class="tag" style="background:#d4e6ff;color:#0055cc;" data-i18n="frozen">frozen</span></h3>
+      <p data-i18n="freezeDesc">Freeze project. Currently paused / on hold.</p>
       <div class="project-tags"><span class="tag" data-i18n="owner">owner</span></div>
     </div>
 
     <div class="project">
-      <h3>Sahai SMP(NonamesmpXThai) <span class="tag" style="background:#ffd4d4;color:#c00;" data-i18n="closed">closed</span></h3>
+      <h3>Aether Proxy <span class="tag" style="background:#f5de6c;color:#222222;" data-i18n="coming_soon">coming soon</span></h3>
+      <p data-i18n="aetherDesc">Aether Proxy is a reliable Minecraft proxy coming soon.</p>
+      <div class="project-tags"><span class="tag">Minecraft proxy</span><span class="tag" data-i18n="owner">owner</span></div>
+    </div>
+
+    <div class="project">
+      <h3>Wings Panel <span class="tag" style="background:#f5de6c;color:#222222;" data-i18n="coming_soon">coming soon</span></h3>
+      <p data-i18n="wingsDesc">Owner & builder of the Wings Panel — a control panel solution.</p>
+      <div class="project-tags"><span class="tag" data-i18n="owner">owner</span></div>
+    </div>
+
+    <div class="project">
+      <h3>Sahai SMP <span class="tag" style="background:#ffd4d4;color:#c00;" data-i18n="closed">closed</span></h3>
       <p data-i18n="sahaiDesc">Minecraft survival server. Owner & maintainer. Now closed.</p>
       <div class="project-tags"><span class="tag">Minecraft</span><span class="tag" data-i18n="owner">owner</span></div>
     </div>
@@ -214,12 +222,13 @@
     </div>
   </section>
 
-  <footer>&copy; 2026 goods112</footer>
+  <footer>&copy; 2026 No</footer>
 </div>
 
 <script>
   const translations = {
     en: {
+      gender: "Male",
       tagline: "Developer · CachyOS",
       bio: "From Thailand. I built Wings Panel, ran Sahai SMP (Minecraft server), developed on Roblox, and did freelance server setup. Always tinkering with networks, plugins, and Lua/Go.",
       skills: "Skills",
@@ -237,6 +246,7 @@
       coming_soon: "coming soon"
     },
     th: {
+      gender: "ชาย",
       tagline: "นักพัฒนา · ใช้ CachyOS",
       bio: "มาจากประเทศไทย สร้าง Wings Panelเเละเคยดูแล Sahai SMP (เซิร์ฟเวอร์ Minecraft) พัฒนาบน Roblox และรับจ้างตั้งค่าเซิร์ฟเวอร์เเต่ไม่ได้ทำต่อเเล้ว ชอบทดลองกับเครือข่าย ปลั๊กอิน และ Lua/Go",
       skills: "ทักษะ",
