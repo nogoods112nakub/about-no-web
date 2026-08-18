@@ -4,73 +4,171 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>No - About Me</title>
+<link rel="icon" type="image/png" href="profile.png">
 <style>
   :root {
-    --bg: #f5f5f5; --card: #ffffff; --text: #1a1a1a; --text-secondary: #555;
-    --accent: #6c5ce7; --border: #e0e0e0; --shadow: rgba(0,0,0,0.08);
-    --skill-bg: #eee; --tag-bg: #e8e5ff; --tag-text: #5a4bd1;
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --accent: #6c5ce7;
+    --accent-hover: #5a4bd1;
+    --border: #e0e0e0;
+    --shadow: rgba(0,0,0,0.08);
+    --skill-bg: #eee;
+    --tag-bg: #e8e5ff;
+    --tag-text: #5a4bd1;
   }
   [data-theme="dark"] {
-    --bg: #0f0f1a; --card: #1a1a2e; --text: #e0e0e0; --text-secondary: #999;
-    --accent: #7c6cf0; --border: #2a2a3e; --shadow: rgba(0,0,0,0.3);
-    --skill-bg: #2a2a3e; --tag-bg: #2a1f5e; --tag-text: #a99bff;
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --text: #e0e0e0;
+    --text-secondary: #999;
+    --accent: #7c6cf0;
+    --accent-hover: #6c5ce7;
+    --border: #2a2a3e;
+    --shadow: rgba(0,0,0,0.3);
+    --skill-bg: #2a2a3e;
+    --tag-bg: #2a1f5e;
+    --tag-text: #a99bff;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 40px 24px; }
-  .container { max-width: 720px; margin: 0 auto; }
-  
-  .controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
-  button { background: var(--card); border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; cursor: pointer; color: var(--text); box-shadow: 0 2px 5px var(--shadow); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+  }
+  .container { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
 
+  /* toggles */
+  .lang-toggle {
+    position: fixed; top: 20px; right: 76px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 22px; padding: 8px 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 0.9rem; color: var(--text); z-index: 100;
+    transition: background 0.3s, border 0.3s;
+    box-shadow: 0 2px 12px var(--shadow);
+    font-weight: 500;
+  }
+  .lang-toggle:hover { border-color: var(--accent); }
+  .theme-toggle {
+    position: fixed; top: 20px; right: 24px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 50%; width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 20px; z-index: 100;
+    transition: background 0.3s, border 0.3s;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+
+  /* profile */
   .profile { text-align: center; margin-bottom: 40px; }
-  .avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 16px; }
-  .profile h1 { font-size: 2rem; margin-bottom: 4px; }
-  .personal-info { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px; }
-  .tagline { font-size: 1.05rem; color: var(--accent); font-weight: 500; margin-bottom: 12px; }
-  .bio { color: var(--text-secondary); max-width: 520px; margin: 0 auto; }
+  .avatar {
+    width: 120px; height: 120px; border-radius: 50%;
+    object-fit: cover; border: 3px solid var(--accent);
+    margin-bottom: 16px;
+  }
+  .profile h1 { font-size: 2rem; font-weight: 700; margin-bottom: 2px; }
+  .personal-info {
+    font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px;
+  }
+  .tagline {
+    font-size: 1.05rem; color: var(--accent); font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .bio { color: var(--text-secondary); max-width: 520px; margin: 0 auto; font-size: 0.95rem; }
 
+  /* sections */
   section { margin-bottom: 36px; }
-  h2 { font-size: 1.2rem; padding-bottom: 6px; border-bottom: 2px solid var(--border); margin-bottom: 14px; }
-  
-  .prefs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  h2 {
+    font-size: 1.2rem; font-weight: 600; margin-bottom: 14px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--border);
+  }
+
+  /* preferences */
+  .prefs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
   .prefs-col h3 { font-size: 0.95rem; margin-bottom: 8px; color: var(--accent); }
-  .prefs-list { list-style: none; color: var(--text-secondary); font-size: 0.9rem; }
-  
+  .prefs-list { list-style: none; }
+  .prefs-list li { font-size: 0.9rem; margin-bottom: 4px; color: var(--text-secondary); }
+
+  /* skills */
   .skills { display: flex; flex-wrap: wrap; gap: 8px; }
-  .skill { background: var(--skill-bg); padding: 6px 14px; border-radius: 20px; font-size: 0.88rem; }
-  
-  .project { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 10px; }
-  .socials { display: flex; gap: 10px; justify-content: center; }
-  .social-link { background: var(--card); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; text-decoration: none; color: var(--text); }
+  .skill {
+    background: var(--skill-bg); padding: 6px 14px; border-radius: 20px;
+    font-size: 0.88rem; transition: background 0.3s;
+  }
+
+  /* projects */
+  .project {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; margin-bottom: 12px;
+    transition: background 0.3s, border 0.3s;
+  }
+  .project h3 { font-size: 1rem; margin-bottom: 4px; }
+  .project p { font-size: 0.9rem; color: var(--text-secondary); }
+  .project-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag {
+    background: var(--tag-bg); color: var(--tag-text);
+    padding: 2px 10px; border-radius: 12px;
+    font-size: 0.78rem; font-weight: 500;
+  }
+
+  /* social */
+  .socials { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .social-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 8px 16px; border-radius: 8px; text-decoration: none;
+    color: var(--text); font-size: 0.9rem; transition: all 0.2s;
+  }
+  .social-link:hover {
+    border-color: var(--accent); color: var(--accent); transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+
+  /* footer */
+  footer { text-align: center; color: var(--text-secondary); font-size: 0.82rem; margin-top: 48px; }
 </style>
 </head>
 <body>
 
-<div class="controls">
-  <button id="langToggle">ไทย</button>
-  <button id="themeToggle">🌙</button>
-</div>
+<button class="lang-toggle" id="langToggle" aria-label="Toggle language">ไทย</button>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
 
 <div class="container">
+
   <header class="profile">
+    <img src="profile.png" alt="No" class="avatar">
     <h1>No</h1>
     <div class="personal-info">AKA: no/goods112 &bull; <span data-i18n="gender">Male</span></div>
-    <div class="tagline" data-i18n="tagline">Developer · CachyOS</div>
-    <p class="bio" data-i18n="bio">From Thailand. Wings Panel creator, former Sahai SMP owner. Tinkering with networks, plugins, and Lua/Go.</p>
+    <div class="tagline" data-i18n="tagline">Developer · Use CachyOS</div>
+    <p class="bio" data-i18n="bio">
+      From Thailand. I built Wings Panel, ran Sahai SMP (Minecraft server),
+      developed on Roblox, and did freelance server setup but I didn't continue with it. Always tinkering with
+      networks, plugins, and Lua/Go.
+    </p>
+    <a href="https://discord.com/users/1006724244308246660" target="_blank">
+      <img src="https://lanyard.cnrad.dev/api/1006724244308246660?theme=dark&bg=18191c&animated=true" alt="Discord Presence" />
+    </a>
   </header>
 
   <section>
     <h2 data-i18n="preferences">Likes & Dislikes</h2>
     <div class="prefs-grid">
-      <div>
+      <div class="prefs-col">
         <h3 data-i18n="likes">Likes</h3>
         <ul class="prefs-list">
           <li data-i18n="like1">• Sleeping</li>
           <li data-i18n="like2">• Working</li>
-          <li data-i18n="like3">• Music</li>
+          <li data-i18n="like3">• Listening to music</li>
         </ul>
       </div>
-      <div>
+      <div class="prefs-col">
         <h3 data-i18n="dislikes">Dislikes</h3>
         <ul class="prefs-list">
           <li data-i18n="dislike1">• Working</li>
@@ -83,30 +181,155 @@
   <section>
     <h2 data-i18n="skills">Skills</h2>
     <div class="skills">
-      <span class="skill">Minecraft Plugins</span><span class="skill">Networking</span><span class="skill">Lua</span><span class="skill">Go</span><span class="skill">Roblox</span>
+      <span class="skill">Minecraft Plugins(a little bit)</span>
+      <span class="skill">Network Config(a little bit)</span>
+      <span class="skill">Lua</span>
+      <span class="skill">Go(I'm Learning That)</span>
+      <span class="skill">Roblox Scripting</span>
     </div>
   </section>
+
+  <section>
+    <h2 data-i18n="projects">Projects</h2>
+    
+    <div class="project">
+      <h3>Freeze <span class="tag" style="background:#d4e6ff;color:#0055cc;" data-i18n="frozen">frozen</span></h3>
+      <p data-i18n="freezeDesc">Freeze project. Currently paused / on hold.</p>
+      <div class="project-tags"><span class="tag" data-i18n="owner">owner</span></div>
+    </div>
+
+    <div class="project">
+      <h3>Aether Proxy <span class="tag" style="background:#f5de6c;color:#222222;" data-i18n="coming_soon">coming soon</span></h3>
+      <p data-i18n="aetherDesc">Aether Proxy is a reliable Minecraft proxy coming soon.</p>
+      <div class="project-tags"><span class="tag">Minecraft proxy</span><span class="tag" data-i18n="owner">owner</span></div>
+    </div>
+
+    <div class="project">
+      <h3>Wings Panel <span class="tag" style="background:#f5de6c;color:#222222;" data-i18n="coming_soon">coming soon</span></h3>
+      <p data-i18n="wingsDesc">Owner & builder of the Wings Panel — a control panel solution.</p>
+      <div class="project-tags"><span class="tag" data-i18n="owner">owner</span></div>
+    </div>
+
+    <div class="project">
+      <h3>Sahai SMP <span class="tag" style="background:#ffd4d4;color:#c00;" data-i18n="closed">closed</span></h3>
+      <p data-i18n="sahaiDesc">Minecraft survival server. Owner & maintainer. Now closed.</p>
+      <div class="project-tags"><span class="tag">Minecraft</span><span class="tag" data-i18n="owner">owner</span></div>
+    </div>
+
+    <div class="project">
+      <h3>Roblox Maps <span class="tag" style="background:#ffd4d4;color:#c00;" data-i18n="closed">closed</span></h3>
+      <p data-i18n="robloxDesc">Built custom maps and experiences on Roblox. No longer active.</p>
+      <div class="project-tags"><span class="tag">Roblox</span><span class="tag" data-i18n="mapdev">map dev</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="connect">Connect</h2>
+    <div class="socials">
+      <a class="social-link" href="https://open.spotify.com/user/31drosgqysm7ji72se7ledbc2unq" target="_blank" rel="noopener">Spotify</a>
+      <a class="social-link" href="https://discord.com/users/1006724244308246660" target="_blank" rel="noopener">Discord</a>
+      <a class="social-link" href="https://github.com/nogoods112nakub" target="_blank" rel="noopener">GitHub</a>
+      <a class="social-link" href="https://www.roblox.com/users/3177681151/profile" target="_blank" rel="noopener">Roblox</a>
+      <a class="social-link" href="https://ko-fi.com/wingspanel" target="_blank" rel="noopener">Ko-fi</a>
+    </div>
+  </section>
+
+  <footer>&copy; 2026 No</footer>
 </div>
 
 <script>
-  const tr = {
-    en: { gender: "Male", tagline: "Developer · CachyOS", bio: "From Thailand. Wings Panel creator, former Sahai SMP owner. Tinkering with networks, plugins, and Lua/Go.", preferences: "Likes & Dislikes", likes: "Likes", dislikes: "Dislikes", like1: "• Sleeping", like2: "• Working", like3: "• Music", dislike1: "• Working", dislike2: "• Sleeping", skills: "Skills" },
-    th: { gender: "ชาย", tagline: "นักพัฒนา · ใช้ CachyOS", bio: "มาจากประเทศไทย สร้าง Wings Panelเเละเคยดูแล Sahai SMP ชอบทดลองกับเครือข่าย ปลั๊กอิน และ Lua/Go", preferences: "สิ่งที่ชอบและไม่ชอบ", likes: "สิ่งที่ชอบ", dislikes: "สิ่งที่ไม่ชอบ", like1: "• นอน", like2: "• ทำงาน", like3: "• ฟังเพลง", dislike1: "• ทำงาน", dislike2: "• นอน", skills: "ทักษะ" }
+  const translations = {
+    en: {
+      gender: "Male",
+      tagline: "Developer · CachyOS",
+      bio: "From Thailand. I built Wings Panel, ran Sahai SMP (Minecraft server), developed on Roblox, and did freelance server setup but I didn't continue with it. Always tinkering with networks, plugins, and Lua/Go.",
+      preferences: "Likes & Dislikes",
+      likes: "Likes",
+      dislikes: "Dislikes",
+      like1: "• Sleeping",
+      like2: "• Working",
+      like3: "• Listening to music",
+      dislike1: "• Working",
+      dislike2: "• Sleeping",
+      skills: "Skills",
+      projects: "Projects",
+      connect: "Connect",
+      freezeDesc: "Freeze project. Currently paused / on hold.",
+      aetherDesc: "Aether Proxy is a reliable Minecraft proxy coming soon.",
+      wingsDesc: "Owner & builder of the Wings Panel — a control panel solution.",
+      sahaiDesc: "Minecraft survival server. Owner & maintainer. Now closed.",
+      robloxDesc: "Built custom maps and experiences on Roblox. No longer active.",
+      owner: "owner",
+      closed: "closed",
+      frozen: "frozen",
+      mapdev: "map dev",
+      coming_soon: "coming soon"
+    },
+    th: {
+      gender: "ชาย",
+      tagline: "นักพัฒนา · ใช้ CachyOS",
+      bio: "มาจากประเทศไทย สร้าง Wings Panelเเละเคยดูแล Sahai SMP (เซิร์ฟเวอร์ Minecraft) พัฒนาบน Roblox และรับจ้างตั้งค่าเซิร์ฟเวอร์เเต่ไม่ได้ทำต่อเเล้ว ชอบทดลองกับเครือข่าย ปลั๊กอิน และ Lua/Go",
+      preferences: "สิ่งที่ชอบและไม่ชอบ",
+      likes: "สิ่งที่ชอบ",
+      dislikes: "สิ่งที่ไม่ชอบ",
+      like1: "• นอน",
+      like2: "• ทำงาน",
+      like3: "• ฟังเพลง",
+      dislike1: "• ทำงาน",
+      dislike2: "• นอน",
+      skills: "ทักษะ",
+      projects: "ผลงาน",
+      connect: "ติดต่อ",
+      freezeDesc: "โปรเจกต์ Freeze ปัจจุบันพักการพัฒนาไว้ก่อน",
+      aetherDesc: "Aether Proxy เป็น Minecraft proxy ที่น่าเชื่อถือ เร็วๆ นี้",
+      wingsDesc: "เจ้าของและผู้สร้าง Wings Panel — โซลูชันแผงควบคุมเซิร์ฟเวอร์",
+      sahaiDesc: "เซิร์ฟเวอร์ Minecraft แนวเอาชีวิตรอด เจ้าของและผู้ดูแล ตอนนี้ปิดแล้ว",
+      robloxDesc: "สร้างแผนที่และประสบการณ์บน Roblox ไม่ได้ทำต่อแล้ว",
+      owner: "เจ้าของ",
+      closed: "ปิดแล้ว",
+      frozen: "ระงับชั่วคราว",
+      mapdev: "นักทำแผนที่",
+      coming_soon: "เร็วๆ นี้"
+    }
   };
-  
-  let lang = 'en';
-  const toggleL = document.getElementById('langToggle');
-  toggleL.addEventListener('click', () => {
-    lang = lang === 'en' ? 'th' : 'en';
-    document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = tr[lang][el.dataset.i18n]);
-    toggleL.textContent = lang === 'en' ? 'ไทย' : 'EN';
-  });
-  
-  const toggleT = document.getElementById('themeToggle');
-  toggleT.addEventListener('click', () => {
-    document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    toggleT.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+
+  const langToggle = document.getElementById('langToggle');
+  let lang = localStorage.getItem('lang') || 'en';
+  const setLang = (l) => {
+    lang = l;
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.dataset.i18n;
+      if (translations[l][key]) {
+        el.textContent = translations[l][key];
+      }
+    });
+    langToggle.textContent = l === 'en' ? 'ไทย' : 'EN';
+    localStorage.setItem('lang', l);
+    document.documentElement.lang = l === 'en' ? 'en' : 'th';
+  };
+  setLang(lang);
+  langToggle.addEventListener('click', () => setLang(lang === 'en' ? 'th' : 'en'));
+
+  const toggle = document.getElementById('themeToggle');
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    toggle.textContent = '☀️';
+  }
+  toggle.addEventListener('click', () => {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      html.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+      toggle.textContent = '🌙';
+    } else {
+      html.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+      toggle.textContent = '☀️';
+    }
   });
 </script>
+
 </body>
 </html>
